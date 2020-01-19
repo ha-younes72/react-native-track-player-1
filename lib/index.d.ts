@@ -36,6 +36,7 @@ declare function getCachedStatus(key: string, length: number): Promise<number>;
 declare function download(key: string, url :string , length: number, path: string, forceOverWrite: boolean): Promise<string>;
 declare function dropCache(): Promise<null>;
 declare function removeSpans(key: string): Promise<string>;
+declare function cancelDownload (key:string): Promise<string>;
 declare function getQueue(): Promise<Track[]>;
 declare function getCurrentTrack(): Promise<string>;
 declare function getDuration(): Promise<number>;

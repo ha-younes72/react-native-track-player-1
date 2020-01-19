@@ -673,12 +673,20 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
     }
 
     @ReactMethod
-    public void dropCache (Promise callback){
-        waitForConnection(()->binder.getPlayback().releaseCache(callback));
+    public void cancelDownload(String key, final Promise callback) {
+        waitForConnection(() -> {
+            binder.getPlayback().cancelSaveToFile(key);
+            callback.resolve(key);
+        });
     }
 
     @ReactMethod
-    public void removeSpans (String key, Promise callback){
-        waitForConnection(()->binder.getPlayback().evictCacheSpansForKey(key, callback));
+    public void dropCache(Promise callback) {
+        waitForConnection(() -> binder.getPlayback().releaseCache(callback));
+    }
+
+    @ReactMethod
+    public void removeSpans(String key, Promise callback) {
+        waitForConnection(() -> binder.getPlayback().evictCacheSpansForKey(key, callback));
     }
 }

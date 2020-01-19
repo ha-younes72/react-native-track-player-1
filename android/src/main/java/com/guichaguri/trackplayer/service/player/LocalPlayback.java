@@ -11,6 +11,7 @@ import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.database.DatabaseProvider;
 import com.google.android.exoplayer2.database.ExoDatabaseProvider;
+import com.google.android.exoplayer2.offline.Download;
 import com.google.android.exoplayer2.source.ConcatenatingMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.upstream.DataSource;
@@ -21,6 +22,7 @@ import com.google.android.exoplayer2.upstream.cache.NoOpCacheEvictor;
 import com.google.android.exoplayer2.upstream.cache.SimpleCache;
 import com.guichaguri.trackplayer.service.MusicManager;
 import com.guichaguri.trackplayer.service.MusicService;
+import com.guichaguri.trackplayer.service.Tasks.DownloadTasks.DownloadTask;
 import com.guichaguri.trackplayer.service.Utils;
 import com.guichaguri.trackplayer.service.models.Track;
 
@@ -28,7 +30,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -42,7 +47,7 @@ public class LocalPlayback extends ExoPlayback<SimpleExoPlayer> {
     private ConcatenatingMediaSource source;
     private boolean prepared = false;
     private final MusicService service;
-
+    private Map<String, DownloadTask> downloadTasksTable = new Hashtable<String, DownloadTask>();
     public LocalPlayback(MusicService service, Context context, MusicManager manager, SimpleExoPlayer player, long maxCacheSize) {
         super(context, manager, player);
         this.cacheMaxSize = maxCacheSize;
@@ -324,7 +329,14 @@ public class LocalPlayback extends ExoPlayback<SimpleExoPlayer> {
 
     @Override
     public void saveToFile(String key, Uri url, int length, String path, Boolean forceOverWrite, Promise callback) {
-        Utils.saveToFile(context, service, cache, key, url, length, path, forceOverWrite, callback);
+        DownloadTask downloadTask = Utils.saveToFile(context, service, cache, key, url, length, path, forceOverWrite, callback);
+        downloadTasksTable.put(key, downloadTask);
+    }
+
+    @Override
+    public void cancelSaveToFile (String key){
+        DownloadTask downloadTask = downloadTasksTable.get(key);
+        Utils.cancelSaveToFile(downloadTask);
     }
 
     @Override

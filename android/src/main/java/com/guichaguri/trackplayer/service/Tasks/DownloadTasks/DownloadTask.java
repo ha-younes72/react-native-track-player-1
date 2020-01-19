@@ -21,15 +21,22 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 
-
 public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
 
-    MusicService service;
-    String key;
-    Uri uri;
-    int length;
-    int progress = 0;
-    Promise callback;
+    private MusicService service;
+    private String key;
+    private Uri uri;
+    private int length;
+    private int progress;
+    private Promise callback;
+    private String path;
+    private long time;
+
+    @Override
+    protected void onPreExecute() {
+        progress = 0;
+        time = System.currentTimeMillis();
+    }
 
     @Override
     protected String doInBackground(TaskParams... params) {
@@ -40,7 +47,7 @@ public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
         key = params[0].key;
         uri = params[0].uri;
         length = params[0].length;
-        String path = params[0].path;
+        path = params[0].path;
         boolean ForceOverWrite = params[0].ForceOverWrite;
         String userAgent = Util.getUserAgent(ctx, "react-native-track-player");
         Log.d(Utils.LOG, "cache download : getUserAgent: " + userAgent + "//");
@@ -59,6 +66,7 @@ public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
                 FileOutputStream fs = new FileOutputStream(path);
                 int read = 0;
                 while ((read = dataSource.read(buffer, 0, buffer.length)) > 0) {
+                    if (isCancelled()) break;
                     fs.write(buffer, 0, read);
                     publishProgress(read);
                 }
@@ -91,24 +99,47 @@ public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
 
     @Override
     protected void onProgressUpdate(Integer... prog) {
-        progress = progress + prog[0];
-        Bundle bundle = new Bundle();
-        bundle.putString("key", key);
-        bundle.putInt("progress", progress);
-        bundle.putInt("length", length);
-        bundle.putString("url", uri.toString());
-        service.emit(MusicEvents.DOWNLOAD_PROGRESS, bundle);
+        if (System.currentTimeMillis() - time > 1000) {
+            time = System.currentTimeMillis();
+            progress = progress + prog[0];
+            Bundle bundle = new Bundle();
+            bundle.putString("key", key);
+            bundle.putInt("progress", progress);
+            bundle.putInt("length", length);
+            bundle.putString("url", uri.toString());
+            service.emit(MusicEvents.DOWNLOAD_PROGRESS, bundle);
+        }
     }
 
     @Override
     protected void onPostExecute(String path) {
-        Bundle bundle = new Bundle();
-        bundle.putString("key", key);
-        bundle.putInt("length", length);
-        bundle.putString("url", uri.toString());
-        bundle.putString("path", path);
-        service.emit(MusicEvents.DOWNLOAD_COMPLETED, bundle);
-        callback.resolve(path);
+        if (isCancelled()) {
+            File partiallyDownloadedFile = new File(path);
+            if (partiallyDownloadedFile.exists()) {
+                partiallyDownloadedFile.delete();
+                Bundle bundle = new Bundle();
+                bundle.putString("key", key);
+                service.emit(MusicEvents.DOWNLOAD_CANCELLED, bundle);
+            }
+        } else {
+            Bundle bundle = new Bundle();
+            bundle.putString("key", key);
+            bundle.putInt("length", length);
+            bundle.putString("url", uri.toString());
+            bundle.putString("path", path);
+            service.emit(MusicEvents.DOWNLOAD_COMPLETED, bundle);
+            callback.resolve(path);
+        }
+    }
 
+    @Override
+    protected void onCancelled() {
+        File partiallyDownloadedFile = new File(path);
+        if (partiallyDownloadedFile.exists()) {
+            partiallyDownloadedFile.delete();
+            Bundle bundle = new Bundle();
+            bundle.putString("key", key);
+            service.emit(MusicEvents.DOWNLOAD_CANCELLED, bundle);
+        }
     }
 }
