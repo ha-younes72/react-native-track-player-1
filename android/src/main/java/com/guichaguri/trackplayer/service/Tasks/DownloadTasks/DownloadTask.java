@@ -31,11 +31,13 @@ public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
     private Promise callback;
     private String path;
     private long time;
+    private int totalProgress;
 
     @Override
     protected void onPreExecute() {
         progress = 0;
         time = System.currentTimeMillis();
+        totalProgress = 0;
     }
 
     @Override
@@ -48,6 +50,7 @@ public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
         uri = params[0].uri;
         length = params[0].length;
         path = params[0].path;
+
         boolean ForceOverWrite = params[0].ForceOverWrite;
         String userAgent = Util.getUserAgent(ctx, "react-native-track-player");
         Log.d(Utils.LOG, "cache download : getUserAgent: " + userAgent + "//");
@@ -79,7 +82,8 @@ public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
                 int read = 0;
                 while ((read = dataSource.read(buffer, 0, buffer.length)) > 0) {
                     fs.write(buffer, 0, read);
-                    publishProgress(read);
+                    totalProgress = totalProgress + read;
+                    publishProgress(totalProgress);
                 }
                 fs.close();
                 dataSource.close();
@@ -101,10 +105,9 @@ public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
     protected void onProgressUpdate(Integer... prog) {
         if (System.currentTimeMillis() - time > 1000) {
             time = System.currentTimeMillis();
-            progress = progress + prog[0];
             Bundle bundle = new Bundle();
             bundle.putString("key", key);
-            bundle.putInt("progress", progress);
+            bundle.putInt("progress", prog[0]);
             bundle.putInt("length", length);
             bundle.putString("url", uri.toString());
             service.emit(MusicEvents.DOWNLOAD_PROGRESS, bundle);
