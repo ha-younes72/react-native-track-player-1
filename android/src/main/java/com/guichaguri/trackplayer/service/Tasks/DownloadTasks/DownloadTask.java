@@ -18,7 +18,6 @@ import com.guichaguri.trackplayer.service.Utils;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 
 
 public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
@@ -64,37 +63,31 @@ public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
         try {
             dataSource.open(new DataSpec(uri, 0, length, key));
             File file = new File(path);
-            if (file.exists()) {
-                file.delete();
-                FileOutputStream fs = new FileOutputStream(path);
-                int read = 0;
-                while ((read = dataSource.read(buffer, 0, buffer.length)) > 0) {
-                    if (isCancelled()) break;
-                    fs.write(buffer, 0, read);
-                    publishProgress(read);
-                }
-                fs.close();
-                dataSource.close();
-                ds.close();
-                return (file.getAbsolutePath());
+            if (file.exists()) file.delete();
+
+            FileOutputStream fs = new FileOutputStream(path);
+            int read = 0;
+            while ((read = dataSource.read(buffer, 0, buffer.length)) > 0) {
+                if (isCancelled()) break;
+                fs.write(buffer, 0, read);
+                totalProgress = totalProgress + read;
+                publishProgress(totalProgress);
+            }
+            fs.close();
+            dataSource.close();
+            ds.close();
+            return (file.getAbsolutePath());
+
+
+        } catch (Exception e) {
+            if (isCancelled()) {
+                Log.d(Utils.LOG, "Download: BackGroundTask Interrupted as expected//");
+                return "0";
             } else {
-                FileOutputStream fs = new FileOutputStream(path);
-                int read = 0;
-                while ((read = dataSource.read(buffer, 0, buffer.length)) > 0) {
-                    fs.write(buffer, 0, read);
-                    totalProgress = totalProgress + read;
-                    publishProgress(totalProgress);
-                }
-                fs.close();
-                dataSource.close();
-                ds.close();
-                return (file.getAbsolutePath());
+                e.printStackTrace();
+                callback.reject(e);
             }
 
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            callback.reject(e);
         }
 
 
@@ -137,6 +130,7 @@ public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
 
     @Override
     protected void onCancelled() {
+        Log.d(Utils.LOG, "Download: BackGroundTask Interrupted as expected//");
         File partiallyDownloadedFile = new File(path);
         if (partiallyDownloadedFile.exists()) {
             partiallyDownloadedFile.delete();
