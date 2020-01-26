@@ -65,7 +65,8 @@ export declare enum Capability {
     SetRating,
     Like,
     Dislike,
-    Bookmark
+    Bookmark,
+    Close
 }
 export declare type ResourceObject = number;
 export interface MetadataOptions {

@@ -110,12 +110,20 @@ public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
     @Override
     protected void onPostExecute(String path) {
         if (isCancelled()) {
-            File partiallyDownloadedFile = new File(path);
-            if (partiallyDownloadedFile.exists()) {
-                partiallyDownloadedFile.delete();
+            try {
+                File partiallyDownloadedFile = new File(path);
+                if (partiallyDownloadedFile.exists()) partiallyDownloadedFile.delete();
                 Bundle bundle = new Bundle();
                 bundle.putString("key", key);
+                bundle.putString("status", "resolved");
                 service.emit(MusicEvents.DOWNLOAD_CANCELLED, bundle);
+            } catch (Exception e) {
+                Bundle bundle = new Bundle();
+                bundle.putString("key", key);
+                bundle.putString("status", "rejected");
+                bundle.putString("error", e.toString());
+                service.emit(MusicEvents.DOWNLOAD_CANCELLED, bundle);
+                e.printStackTrace();
             }
         } else {
             Bundle bundle = new Bundle();
@@ -126,17 +134,27 @@ public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
             service.emit(MusicEvents.DOWNLOAD_COMPLETED, bundle);
             callback.resolve(path);
         }
+
     }
 
     @Override
     protected void onCancelled() {
         Log.d(Utils.LOG, "Download: BackGroundTask Interrupted as expected//");
-        File partiallyDownloadedFile = new File(path);
-        if (partiallyDownloadedFile.exists()) {
-            partiallyDownloadedFile.delete();
+        try {
+            File partiallyDownloadedFile = new File(path);
+            if (partiallyDownloadedFile.exists()) partiallyDownloadedFile.delete();
             Bundle bundle = new Bundle();
             bundle.putString("key", key);
+            bundle.putString("status", "resolved");
             service.emit(MusicEvents.DOWNLOAD_CANCELLED, bundle);
+        } catch (Exception e) {
+            Bundle bundle = new Bundle();
+            bundle.putString("key", key);
+            bundle.putString("status", "rejected");
+            bundle.putString("error", e.toString());
+            service.emit(MusicEvents.DOWNLOAD_CANCELLED, bundle);
+            e.printStackTrace();
         }
+
     }
 }

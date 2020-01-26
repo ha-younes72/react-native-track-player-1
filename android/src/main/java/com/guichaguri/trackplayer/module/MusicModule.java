@@ -146,6 +146,7 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
         constants.put("CAPABILITY_SET_RATING", PlaybackStateCompat.ACTION_SET_RATING);
         constants.put("CAPABILITY_JUMP_FORWARD", PlaybackStateCompat.ACTION_FAST_FORWARD);
         constants.put("CAPABILITY_JUMP_BACKWARD", PlaybackStateCompat.ACTION_REWIND);
+        constants.put("CAPABILITY_CLOSE",PlaybackStateCompat.ACTION_STOP);
 
         // States
         constants.put("STATE_NONE", PlaybackStateCompat.STATE_NONE);

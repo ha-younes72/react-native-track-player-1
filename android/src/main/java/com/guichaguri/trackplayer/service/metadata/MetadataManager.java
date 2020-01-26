@@ -49,7 +49,7 @@ public class MetadataManager {
     private SimpleTarget<Bitmap> artworkTarget;
     private NotificationCompat.Builder builder;
 
-    private Action previousAction, rewindAction, playAction, pauseAction, stopAction, forwardAction, nextAction;
+    private Action previousAction, rewindAction, playAction, pauseAction, stopAction, forwardAction, nextAction, closeAction;
 
     public MetadataManager(MusicService service, MusicManager manager) {
         this.service = service;
@@ -125,11 +125,14 @@ public class MetadataManager {
                     getIcon(options, "forwardIcon", R.drawable.forward));
             nextAction = createAction(notification, PlaybackStateCompat.ACTION_SKIP_TO_NEXT, "Next",
                     getIcon(options, "nextIcon", R.drawable.next));
+            closeAction = createAction(notification,PlaybackStateCompat.ACTION_STOP, "Close",
+                    getIcon(options, "closeIcon", R.drawable.close));
 
             // Update the action mask for the compact view
             if (compact != null) {
                 for (int cap : compact) compactActions |= cap;
             }
+
         }
 
         // Update the color
@@ -137,6 +140,7 @@ public class MetadataManager {
 
         // Update the icon
         builder.setSmallIcon(getIcon(options, "icon", R.drawable.play));
+
 
         // Update the jump interval
         jumpInterval = options.getInt("jumpInterval", 15);
@@ -238,23 +242,20 @@ public class MetadataManager {
             addAction(playAction, PlaybackStateCompat.ACTION_PLAY, compact);
         }
 
-        addAction(stopAction, PlaybackStateCompat.ACTION_STOP, compact);
+        // addAction(stopAction, PlaybackStateCompat.ACTION_STOP, compact);
         addAction(forwardAction, PlaybackStateCompat.ACTION_FAST_FORWARD, compact);
         addAction(nextAction, PlaybackStateCompat.ACTION_SKIP_TO_NEXT, compact);
+        addAction(closeAction, PlaybackStateCompat.ACTION_STOP, compact);
 
         // Prevent the media style from being used in older Huawei devices that don't support custom styles
-        if (!Build.MANUFACTURER.toLowerCase().contains("huawei") || Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (!Build.MANUFACTURER.toLowerCase().contains("huawei")) {
 
             MediaStyle style = new MediaStyle();
 
-            if (playing) {
-                style.setShowCancelButton(false);
-            } else {
                 // Shows the cancel button on pre-lollipop versions due to a bug
                 style.setShowCancelButton(true);
                 style.setCancelButtonIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(service,
                         PlaybackStateCompat.ACTION_STOP));
-            }
 
             // Links the media session
             style.setMediaSession(session.getSessionToken());

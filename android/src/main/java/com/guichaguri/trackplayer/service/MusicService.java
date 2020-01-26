@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -102,14 +103,14 @@ public class MusicService extends HeadlessJsTaskService {
                 MediaButtonReceiver.handleIntent(manager.getMetadata().getSession(), intent);
             }
 
-            return START_NOT_STICKY;
+            return START_STICKY;
         }
 
         manager = new MusicManager(this);
         handler = new Handler();
 
         super.onStartCommand(intent, flags, startId);
-        return START_NOT_STICKY;
+        return START_STICKY;
     }
 
     @Override
@@ -121,10 +122,16 @@ public class MusicService extends HeadlessJsTaskService {
 
     @Override
     public void onTaskRemoved(Intent rootIntent) {
+        Log.d(Utils.LOG, "Task: onTaskRemoved");
         super.onTaskRemoved(rootIntent);
 
         if (manager == null || manager.shouldStopWithApp()) {
+            if (manager != null) {
+                manager.getPlayback().stop();
+                Log.d(Utils.LOG, "Task: getPlayback().stop()");
+            }
             stopSelf();
+            Log.d(Utils.LOG, "Task: destroy");
         }
     }
 }
