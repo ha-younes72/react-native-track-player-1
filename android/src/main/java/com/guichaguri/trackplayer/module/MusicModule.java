@@ -690,4 +690,9 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
     public void removeSpans(String key, Promise callback) {
         waitForConnection(() -> binder.getPlayback().evictCacheSpansForKey(key, callback));
     }
+
+    @ReactMethod
+    public void isServiceRunning(final Promise promise) {
+        promise.resolve(binder != null);
+    }
 }

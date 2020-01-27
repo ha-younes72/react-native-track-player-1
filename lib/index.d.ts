@@ -45,6 +45,7 @@ declare function getPosition(): Promise<number>;
 declare function getState(): Promise<State>;
 declare function setRepeatMode(mode: number): Promise<void>;
 declare function getRepeatMode(): Promise<State>;
+declare function isServiceRunning(): Promise<boolean>;
 
 export * from './hooks';
 export * from './interfaces';

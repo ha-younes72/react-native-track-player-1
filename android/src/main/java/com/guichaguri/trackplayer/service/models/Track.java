@@ -161,6 +161,7 @@ public class Track {
         }
 
         if (artwork != null) {
+
             builder.putString(METADATA_KEY_ART_URI, artwork.toString());
         }
 
