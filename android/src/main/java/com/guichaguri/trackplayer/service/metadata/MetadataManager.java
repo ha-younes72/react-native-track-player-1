@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -194,7 +195,15 @@ public class MetadataManager {
         MediaMetadataCompat.Builder metadata = track.toMediaMetadata();
 
         RequestManager rm = Glide.with(service.getApplicationContext());
+        builder.setContentTitle(track.title);
+        builder.setContentText(track.artist);
+        builder.setSubText(track.album);
+        session.setMetadata(metadata.build());
+        updateNotification();
+
         if (artworkTarget != null) rm.clear(artworkTarget);
+        Bitmap icon = BitmapFactory.decodeResource(service.getApplicationContext().getResources(),R.drawable.default_big_icon);
+        builder.setLargeIcon(icon);
 
         if (track.artwork != null) {
             artworkTarget = rm.asBitmap()
@@ -211,6 +220,7 @@ public class MetadataManager {
                         }
                     });
         }
+
 
         builder.setContentTitle(track.title);
         builder.setContentText(track.artist);
