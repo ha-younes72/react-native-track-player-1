@@ -129,7 +129,7 @@ public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
                 service.emit(MusicEvents.DOWNLOAD_CANCELLED, bundle);
                 e.printStackTrace();
             }
-        } else if (path != 0) {
+        } else if (path != "0") {
             Bundle bundle = new Bundle();
             bundle.putString("key", key);
             bundle.putInt("length", length);
