@@ -31,6 +31,7 @@ public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
     private String path;
     private long time;
     private int totalProgress;
+    private boolean ignoreCancel = false;
 
     @Override
     protected void onPreExecute() {
@@ -66,6 +67,7 @@ public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
             if (file.exists() && ForceOverWrite) {
                 file.delete();
             } else if (file.exists() && !ForceOverWrite) {
+                ignoreCancel = true;
                 throw new Exception("File exists");
             }
 
@@ -146,7 +148,7 @@ public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
         Log.d(Utils.LOG, "Download: BackGroundTask Interrupted as expected//");
         try {
             File partiallyDownloadedFile = new File(path);
-            if (partiallyDownloadedFile.exists()) partiallyDownloadedFile.delete();
+            if (!ignoreCancel && partiallyDownloadedFile.exists()) partiallyDownloadedFile.delete();
             Bundle bundle = new Bundle();
             bundle.putString("key", key);
             bundle.putString("status", "resolved");
