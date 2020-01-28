@@ -63,7 +63,11 @@ public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
         try {
             dataSource.open(new DataSpec(uri, 0, length, key));
             File file = new File(path);
-            if (file.exists()) file.delete();
+            if (file.exists() && ForceOverWrite) {
+                file.delete();
+            } else if (file.exists() && !ForceOverWrite) {
+                throw new Exception("File exists");
+            }
 
             FileOutputStream fs = new FileOutputStream(path);
             int read = 0;
@@ -126,7 +130,7 @@ public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
                 service.emit(MusicEvents.DOWNLOAD_CANCELLED, bundle);
                 e.printStackTrace();
             }
-        } else {
+        } else if (path != "0") {
             Bundle bundle = new Bundle();
             bundle.putString("key", key);
             bundle.putInt("length", length);
