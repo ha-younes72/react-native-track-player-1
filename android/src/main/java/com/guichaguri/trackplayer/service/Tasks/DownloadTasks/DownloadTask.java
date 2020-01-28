@@ -96,6 +96,7 @@ public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
 
     @Override
     protected void onProgressUpdate(Integer... prog) {
+        Log.d(Utils.LOG, "download progress");
         if (System.currentTimeMillis() - time > 1000) {
             time = System.currentTimeMillis();
             Bundle bundle = new Bundle();

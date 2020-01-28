@@ -676,8 +676,7 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
     @ReactMethod
     public void cancelDownload(String key, final Promise callback) {
         waitForConnection(() -> {
-            binder.getPlayback().cancelSaveToFile(key);
-            callback.resolve(key);
+            binder.getPlayback().cancelSaveToFile(key, callback);
         });
     }
 

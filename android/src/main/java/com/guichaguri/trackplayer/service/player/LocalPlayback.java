@@ -334,9 +334,14 @@ public class LocalPlayback extends ExoPlayback<SimpleExoPlayer> {
     }
 
     @Override
-    public void cancelSaveToFile (String key){
-        DownloadTask downloadTask = downloadTasksTable.get(key);
-        Utils.cancelSaveToFile(downloadTask);
+    public void cancelSaveToFile (String key, Promise callback){
+        try {
+            DownloadTask downloadTask = downloadTasksTable.get(key);
+            Utils.cancelSaveToFile(downloadTask);
+            callback.resolve(key);
+        }catch(Throwable Error){
+            callback.reject(Error);
+        }
     }
 
     @Override
