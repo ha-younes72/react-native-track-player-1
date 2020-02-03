@@ -118,7 +118,8 @@ public class LocalPlayback extends ExoPlayback<SimpleExoPlayer> {
                 MediaSource trackSource = track.toMediaSource(context, this);
                 source.removeMediaSource(index);
                 source.addMediaSource(index, trackSource, manager.getHandler(), Utils.toRunnable(promise));
-
+                if (currentIndex == index)
+                    manager.getMetadata().updateMetadata(track);
                 prepare();
             }
         } catch (Exception ex) {

@@ -257,8 +257,7 @@ public class MetadataManager {
         addAction(nextAction, PlaybackStateCompat.ACTION_SKIP_TO_NEXT, compact);
         addAction(closeAction, PlaybackStateCompat.ACTION_STOP, compact);
 
-        // Prevent the media style from being used in older Huawei devices that don't support custom styles
-        if (!Build.MANUFACTURER.toLowerCase().contains("huawei")) {
+        // Prevent the media style from being used in older Huawei devices that don't support custom styles --removed
 
             MediaStyle style = new MediaStyle();
 
@@ -281,7 +280,6 @@ public class MetadataManager {
 
             builder.setStyle(style);
 
-        }
 
         // Updates the media session state
         PlaybackStateCompat.Builder pb = new PlaybackStateCompat.Builder();
