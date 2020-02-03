@@ -258,7 +258,7 @@ public class MetadataManager {
         addAction(closeAction, PlaybackStateCompat.ACTION_STOP, compact);
 
         // Prevent the media style from being used in older Huawei devices that don't support custom styles --removed
-
+        if (!Build.MANUFACTURER.toLowerCase().contains("huawei") || Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             MediaStyle style = new MediaStyle();
 
                 // Shows the cancel button on pre-lollipop versions due to a bug
@@ -279,7 +279,7 @@ public class MetadataManager {
             }
 
             builder.setStyle(style);
-
+        }
 
         // Updates the media session state
         PlaybackStateCompat.Builder pb = new PlaybackStateCompat.Builder();
