@@ -26,16 +26,15 @@ public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
     private String key;
     private Uri uri;
     private int length;
-    private int progress;
     private Promise callback;
     private String path;
     private long time;
     private int totalProgress;
     private boolean ignoreCancel = false;
 
+
     @Override
     protected void onPreExecute() {
-        progress = 0;
         time = System.currentTimeMillis();
         totalProgress = 0;
     }
@@ -90,6 +89,25 @@ public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
                 Log.d(Utils.LOG, "Download: BackGroundTask Interrupted as expected//");
                 return "0";
             } else {
+                Log.d(Utils.LOG, "Download: BackGroundTask Interrupted as unexpectedly//");
+                try {
+                    File partiallyDownloadedFile = new File(path);
+                    if (partiallyDownloadedFile.exists()) partiallyDownloadedFile.delete();
+                    Bundle bundle = new Bundle();
+                    bundle.putString("key", key);
+                    bundle.putString("status", "rejected");
+                    bundle.putString("cause",String.valueOf(e.getCause()));
+                    bundle.putString("message", e.getMessage());
+                    service.emit(MusicEvents.DOWNLOAD_ERROR, bundle);
+                } catch (Exception error) {
+                    Bundle bundle = new Bundle();
+                    bundle.putString("key", key);
+                    bundle.putString("status", "rejected");
+                    bundle.putString("cause",String.valueOf(error.getCause()));
+                    bundle.putString("error", error.getMessage());
+                    service.emit(MusicEvents.DOWNLOAD_ERROR, bundle);
+                    e.printStackTrace();
+                }
                 e.printStackTrace();
                 callback.reject(e);
             }
@@ -119,7 +137,7 @@ public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
         if (isCancelled()) {
             try {
                 File partiallyDownloadedFile = new File(path);
-                if (partiallyDownloadedFile.exists()) partiallyDownloadedFile.delete();
+                if (!ignoreCancel && partiallyDownloadedFile.exists()) partiallyDownloadedFile.delete();
                 Bundle bundle = new Bundle();
                 bundle.putString("key", key);
                 bundle.putString("status", "resolved");

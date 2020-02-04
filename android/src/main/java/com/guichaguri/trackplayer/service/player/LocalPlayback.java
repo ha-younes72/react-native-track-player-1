@@ -2,6 +2,7 @@ package com.guichaguri.trackplayer.service.player;
 
 import android.content.Context;
 import android.net.Uri;
+import android.support.v4.media.session.MediaSessionCompat;
 import android.util.Log;
 
 import com.facebook.react.bridge.Promise;
@@ -99,6 +100,7 @@ public class LocalPlayback extends ExoPlayback<SimpleExoPlayer> {
 
     @Override
     public void add(Track track, int index, Promise promise) {
+
         queue.add(index, track);
         MediaSource trackSource = track.toMediaSource(context, this);
         source.addMediaSource(index, trackSource, manager.getHandler(), Utils.toRunnable(promise));
@@ -134,6 +136,7 @@ public class LocalPlayback extends ExoPlayback<SimpleExoPlayer> {
         for (Track track : tracks) {
             trackList.add(track.toMediaSource(context, this));
         }
+
 
         queue.addAll(index, tracks);
         source.addMediaSources(index, trackList, manager.getHandler(), Utils.toRunnable(promise));

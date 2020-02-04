@@ -42,6 +42,7 @@ public class MusicEvents extends BroadcastReceiver {
     public static final String DOWNLOAD_PROGRESS = "download-progress";
     public static final String DOWNLOAD_COMPLETED = "download-completed";
     public static final String DOWNLOAD_CANCELLED = "download-cancelled";
+    public static final String DOWNLOAD_ERROR = "download-error";
 
     private final ReactContext reactContext;
 
