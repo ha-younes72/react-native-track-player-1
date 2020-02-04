@@ -9,6 +9,7 @@ import android.support.v4.media.RatingCompat;
 import android.support.v4.media.session.MediaSessionCompat.QueueItem;
 import android.util.Log;
 
+import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.ProgressiveMediaSource;
@@ -22,6 +23,8 @@ import com.google.android.exoplayer2.upstream.DataSpec;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
+import com.google.android.exoplayer2.upstream.DefaultLoadErrorHandlingPolicy;
+import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.google.android.exoplayer2.upstream.RawResourceDataSource;
 import com.google.android.exoplayer2.upstream.TransferListener;
 import com.google.android.exoplayer2.util.Util;
@@ -50,20 +53,7 @@ import static android.support.v4.media.MediaMetadataCompat.METADATA_KEY_TITLE;
  */
 public class Track {
 
-    public static List<Track> createTracks(Context context, List objects, int ratingType) {
-        List<Track> tracks = new ArrayList<>();
-
-        for (Object o : objects) {
-            if (o instanceof Bundle) {
-                tracks.add(new Track(context, (Bundle) o, ratingType));
-            } else {
-                return null;
-            }
-        }
-
-        return tracks;
-    }
-
+    public final long queueId;
     public String id;
     public Uri uri;
     public int resourceId;
@@ -87,8 +77,27 @@ public class Track {
     public RatingCompat rating;
 
     public Map<String, String> headers;
+    private TransferListener HttpFactoryListener = new TransferListener() {
+        @Override
+        public void onTransferInitializing(DataSource source, DataSpec dataSpec, boolean isNetwork) {
+            Log.d(Utils.LOG, "cache onTransferInitializing : source:" + source + " source:" + dataSpec + " source" + isNetwork + "//");
+        }
 
-    public final long queueId;
+        @Override
+        public void onTransferStart(DataSource source, DataSpec dataSpec, boolean isNetwork) {
+            Log.d(Utils.LOG, "cache onTransferStart : source:" + source + " source:" + dataSpec + " source" + isNetwork + "//");
+        }
+
+        @Override
+        public void onBytesTransferred(DataSource source, DataSpec dataSpec, boolean isNetwork, int bytesTransferred) {
+            //Log.d(Utils.LOG, "cache onBytesTransferred : source:"+source+" source:"+dataSpec+" source"+isNetwork+"bytesTransferred"+bytesTransferred+"//");
+        }
+
+        @Override
+        public void onTransferEnd(DataSource source, DataSpec dataSpec, boolean isNetwork) {
+            Log.d(Utils.LOG, "cache onTransferEnd : source:" + source + " source:" + dataSpec + " source" + isNetwork + "//");
+        }
+    };
 
     public Track(Context context, Bundle bundle, int ratingType) {
 
@@ -128,6 +137,20 @@ public class Track {
 
         queueId = System.currentTimeMillis();
         originalItem = bundle;
+    }
+
+    public static List<Track> createTracks(Context context, List objects, int ratingType) {
+        List<Track> tracks = new ArrayList<>();
+
+        for (Object o : objects) {
+            if (o instanceof Bundle) {
+                tracks.add(new Track(context, (Bundle) o, ratingType));
+            } else {
+                return null;
+            }
+        }
+
+        return tracks;
     }
 
     public void setMetadata(Context context, Bundle bundle, int ratingType) {
@@ -246,35 +269,40 @@ public class Track {
                 if (key != null) {
                     return new ProgressiveMediaSource.Factory(ds, new DefaultExtractorsFactory()
                             .setConstantBitrateSeekingEnabled(true))
+                            .setLoadErrorHandlingPolicy(new CustomPolicy())
                             .setCustomCacheKey(key)
                             .createMediaSource(uri);
                 } else {
                     return new ProgressiveMediaSource.Factory(ds, new DefaultExtractorsFactory()
                             .setConstantBitrateSeekingEnabled(true))
+                            .setLoadErrorHandlingPolicy(new CustomPolicy())
                             .createMediaSource(uri);
                 }
         }
     }
+}
 
-    private TransferListener HttpFactoryListener = new TransferListener() {
-        @Override
-        public void onTransferInitializing(DataSource source, DataSpec dataSpec, boolean isNetwork) {
-            Log.d(Utils.LOG, "cache onTransferInitializing : source:" + source + " source:" + dataSpec + " source" + isNetwork + "//");
-        }
 
-        @Override
-        public void onTransferStart(DataSource source, DataSpec dataSpec, boolean isNetwork) {
-            Log.d(Utils.LOG, "cache onTransferStart : source:" + source + " source:" + dataSpec + " source" + isNetwork + "//");
-        }
+final class CustomPolicy
+        extends DefaultLoadErrorHandlingPolicy {
 
-        @Override
-        public void onBytesTransferred(DataSource source, DataSpec dataSpec, boolean isNetwork, int bytesTransferred) {
-            //Log.d(Utils.LOG, "cache onBytesTransferred : source:"+source+" source:"+dataSpec+" source"+isNetwork+"bytesTransferred"+bytesTransferred+"//");
+    @Override
+    public long getRetryDelayMsFor(
+            int dataType,
+            long loadDurationMs,
+            IOException exception,
+            int errorCount) {
+        // Replace NoConnectivityException with the corresponding
+        // exception for the used DataSource.
+        if (exception instanceof HttpDataSource.HttpDataSourceException) {
+            return 5000; // Retry every 5 seconds.
+        } else {
+            return C.TIME_UNSET; // Anything else is surfaced.
         }
+    }
 
-        @Override
-        public void onTransferEnd(DataSource source, DataSpec dataSpec, boolean isNetwork) {
-            Log.d(Utils.LOG, "cache onTransferEnd : source:" + source + " source:" + dataSpec + " source" + isNetwork + "//");
-        }
-    };
+    @Override
+    public int getMinimumLoadableRetryCount(int dataType) {
+        return Integer.MAX_VALUE;
+    }
 }

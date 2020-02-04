@@ -96,14 +96,14 @@ public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
                     Bundle bundle = new Bundle();
                     bundle.putString("key", key);
                     bundle.putString("status", "rejected");
-                    bundle.putString("cause",String.valueOf(e.getCause()));
+                    bundle.putString("cause", String.valueOf(e.getCause()));
                     bundle.putString("message", e.getMessage());
                     service.emit(MusicEvents.DOWNLOAD_ERROR, bundle);
                 } catch (Exception error) {
                     Bundle bundle = new Bundle();
                     bundle.putString("key", key);
                     bundle.putString("status", "rejected");
-                    bundle.putString("cause",String.valueOf(error.getCause()));
+                    bundle.putString("cause", String.valueOf(error.getCause()));
                     bundle.putString("error", error.getMessage());
                     service.emit(MusicEvents.DOWNLOAD_ERROR, bundle);
                     e.printStackTrace();
@@ -137,7 +137,8 @@ public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
         if (isCancelled()) {
             try {
                 File partiallyDownloadedFile = new File(path);
-                if (!ignoreCancel && partiallyDownloadedFile.exists()) partiallyDownloadedFile.delete();
+                if (!ignoreCancel && partiallyDownloadedFile.exists())
+                    partiallyDownloadedFile.delete();
                 Bundle bundle = new Bundle();
                 bundle.putString("key", key);
                 bundle.putString("status", "resolved");
