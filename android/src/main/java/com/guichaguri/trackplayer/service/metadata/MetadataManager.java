@@ -230,7 +230,9 @@ public class MetadataManager {
 
         // Adds the media buttons to the notification
 
-        addAction(previousAction, PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS, compact);
+        if (!Build.MANUFACTURER.toLowerCase().contains("huawei") || Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            addAction(previousAction, PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS, compact);
+        }
         addAction(rewindAction, PlaybackStateCompat.ACTION_REWIND, compact);
 
         if (playing) {

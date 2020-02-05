@@ -294,7 +294,14 @@ final class CustomPolicy
             int errorCount) {
         // Replace NoConnectivityException with the corresponding
         // exception for the used DataSource.
-        if (exception instanceof HttpDataSource.HttpDataSourceException) {
+        if (exception instanceof HttpDataSource.InvalidResponseCodeException ) {
+            exception.printStackTrace();
+            return C.TIME_UNSET; // surfaced..
+        }else if (exception instanceof HttpDataSource.InvalidContentTypeException ) {
+            exception.printStackTrace();
+            return C.TIME_UNSET; // surfaced..
+        }else if (exception instanceof HttpDataSource.HttpDataSourceException ) {
+            exception.printStackTrace();
             return 5000; // Retry every 5 seconds.
         } else {
             return C.TIME_UNSET; // Anything else is surfaced.

@@ -146,7 +146,7 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
         constants.put("CAPABILITY_SET_RATING", PlaybackStateCompat.ACTION_SET_RATING);
         constants.put("CAPABILITY_JUMP_FORWARD", PlaybackStateCompat.ACTION_FAST_FORWARD);
         constants.put("CAPABILITY_JUMP_BACKWARD", PlaybackStateCompat.ACTION_REWIND);
-        constants.put("CAPABILITY_CLOSE",PlaybackStateCompat.ACTION_STOP);
+        constants.put("CAPABILITY_CLOSE", PlaybackStateCompat.ACTION_STOP);
 
         // States
         constants.put("STATE_NONE", PlaybackStateCompat.STATE_NONE);
@@ -187,8 +187,10 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
 
         try {
             if (binder != null) {
-                binder.destroy();
+                binder.post(()->{binder.destroy();
                 binder = null;
+                });
+
             }
 
             ReactContext context = getReactApplicationContext();
@@ -197,6 +199,8 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
             // This method shouldn't be throwing unhandled errors even if something goes wrong.
             Log.e(Utils.LOG, "An error occurred while destroying the service", ex);
         }
+
+
     }
 
 
@@ -494,8 +498,12 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
     @ReactMethod
     public void play(final Promise callback) {
         waitForConnection(() -> {
-            binder.getPlayback().play();
-            callback.resolve(null);
+            try {
+                binder.getPlayback().play();
+                callback.resolve(null);
+            } catch (Exception e) {
+                callback.reject(e);
+            }
         });
     }
 
@@ -660,6 +668,7 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
 
     @ReactMethod
     public void getState(final Promise callback) {
+        Log.d("TrackPlayer!!!!!!!!","getState is being called");
         waitForConnection(() -> callback.resolve(binder.getPlayback().getState()));
     }
 
