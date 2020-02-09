@@ -379,7 +379,7 @@ public abstract class ExoPlayback<T extends Player> implements EventListener, Me
                 errorCode = String.valueOf(((HttpDataSource.InvalidResponseCodeException) cause).responseCode);
             } else if (cause instanceof HttpDataSource.InvalidContentTypeException) {
                 code = "playback-source";
-                errorCode = ((HttpDataSource.InvalidContentTypeException) cause).contentType;
+                errorCode = "InvalidContentType";
             } else if (cause instanceof HttpDataSource.HttpDataSourceException) {
                 code = "playback-source";
                 errorCode = String.valueOf(((HttpDataSource.HttpDataSourceException) cause).type);
