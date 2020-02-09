@@ -126,7 +126,7 @@ public class MetadataManager {
                     getIcon(options, "forwardIcon", R.drawable.forward));
             nextAction = createAction(notification, PlaybackStateCompat.ACTION_SKIP_TO_NEXT, "Next",
                     getIcon(options, "nextIcon", R.drawable.next));
-            closeAction = createAction(notification,PlaybackStateCompat.ACTION_STOP, "Close",
+            closeAction = createAction(notification, PlaybackStateCompat.ACTION_STOP, "Close",
                     getIcon(options, "closeIcon", R.drawable.close));
 
             // Update the action mask for the compact view
@@ -198,12 +198,10 @@ public class MetadataManager {
         builder.setContentTitle(track.title);
         builder.setContentText(track.artist);
         builder.setSubText(track.album);
-        session.setMetadata(metadata.build());
-        updateNotification();
+        Bitmap icon = BitmapFactory.decodeResource(service.getApplicationContext().getResources(), R.drawable.default_big_icon);
+        updateArtwork(icon);
 
         if (artworkTarget != null) rm.clear(artworkTarget);
-        Bitmap icon = BitmapFactory.decodeResource(service.getApplicationContext().getResources(),R.drawable.default_big_icon);
-        builder.setLargeIcon(icon);
 
         if (track.artwork != null) {
             artworkTarget = rm.asBitmap()
@@ -211,23 +209,12 @@ public class MetadataManager {
                     .into(new SimpleTarget<Bitmap>() {
                         @Override
                         public void onResourceReady(Bitmap resource, Transition<? super Bitmap> transition) {
-                            metadata.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, resource);
-                            builder.setLargeIcon(resource);
-
-                            session.setMetadata(metadata.build());
-                            updateNotification();
+                            updateArtwork(resource);
                             artworkTarget = null;
                         }
                     });
         }
 
-
-        builder.setContentTitle(track.title);
-        builder.setContentText(track.artist);
-        builder.setSubText(track.album);
-
-        session.setMetadata(metadata.build());
-        updateNotification();
     }
 
     /**
@@ -243,7 +230,9 @@ public class MetadataManager {
 
         // Adds the media buttons to the notification
 
-        addAction(previousAction, PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS, compact);
+        if (!Build.MANUFACTURER.toLowerCase().contains("huawei") || Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            addAction(previousAction, PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS, compact);
+        }
         addAction(rewindAction, PlaybackStateCompat.ACTION_REWIND, compact);
 
         if (playing) {
@@ -257,15 +246,17 @@ public class MetadataManager {
         addAction(nextAction, PlaybackStateCompat.ACTION_SKIP_TO_NEXT, compact);
         addAction(closeAction, PlaybackStateCompat.ACTION_STOP, compact);
 
-        // Prevent the media style from being used in older Huawei devices that don't support custom styles
-        if (!Build.MANUFACTURER.toLowerCase().contains("huawei")) {
+        // Prevent the media style from being used in older Huawei devices that don't support custom styles --removed
+
+        if (!Build.MANUFACTURER.toLowerCase().contains("huawei") || Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
 
             MediaStyle style = new MediaStyle();
 
-                // Shows the cancel button on pre-lollipop versions due to a bug
-                style.setShowCancelButton(true);
-                style.setCancelButtonIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(service,
-                        PlaybackStateCompat.ACTION_STOP));
+            // Shows the cancel button on pre-lollipop versions due to a bug
+            style.setShowCancelButton(true);
+            style.setCancelButtonIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(service,
+                    PlaybackStateCompat.ACTION_STOP));
 
             // Links the media session
             style.setMediaSession(session.getSessionToken());
@@ -280,7 +271,6 @@ public class MetadataManager {
             }
 
             builder.setStyle(style);
-
         }
 
         // Updates the media session state

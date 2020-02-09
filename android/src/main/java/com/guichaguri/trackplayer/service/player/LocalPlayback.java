@@ -11,11 +11,9 @@ import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.database.DatabaseProvider;
 import com.google.android.exoplayer2.database.ExoDatabaseProvider;
-import com.google.android.exoplayer2.offline.Download;
 import com.google.android.exoplayer2.source.ConcatenatingMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.upstream.DataSource;
-import com.google.android.exoplayer2.upstream.cache.Cache;
 import com.google.android.exoplayer2.upstream.cache.CacheDataSourceFactory;
 import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor;
 import com.google.android.exoplayer2.upstream.cache.NoOpCacheEvictor;
@@ -30,7 +28,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -42,12 +39,12 @@ import java.util.Random;
 public class LocalPlayback extends ExoPlayback<SimpleExoPlayer> {
 
     private final long cacheMaxSize;
-
+    private final MusicService service;
     private SimpleCache cache;
     private ConcatenatingMediaSource source;
     private boolean prepared = false;
-    private final MusicService service;
     private Map<String, DownloadTask> downloadTasksTable = new Hashtable<String, DownloadTask>();
+
     public LocalPlayback(MusicService service, Context context, MusicManager manager, SimpleExoPlayer player, long maxCacheSize) {
         super(context, manager, player);
         this.cacheMaxSize = maxCacheSize;
@@ -99,6 +96,7 @@ public class LocalPlayback extends ExoPlayback<SimpleExoPlayer> {
 
     @Override
     public void add(Track track, int index, Promise promise) {
+
         queue.add(index, track);
         MediaSource trackSource = track.toMediaSource(context, this);
         source.addMediaSource(index, trackSource, manager.getHandler(), Utils.toRunnable(promise));
@@ -118,7 +116,8 @@ public class LocalPlayback extends ExoPlayback<SimpleExoPlayer> {
                 MediaSource trackSource = track.toMediaSource(context, this);
                 source.removeMediaSource(index);
                 source.addMediaSource(index, trackSource, manager.getHandler(), Utils.toRunnable(promise));
-
+                if (currentIndex == index)
+                    manager.getMetadata().updateMetadata(track);
                 prepare();
             }
         } catch (Exception ex) {
@@ -133,6 +132,7 @@ public class LocalPlayback extends ExoPlayback<SimpleExoPlayer> {
         for (Track track : tracks) {
             trackList.add(track.toMediaSource(context, this));
         }
+
 
         queue.addAll(index, tracks);
         source.addMediaSources(index, trackList, manager.getHandler(), Utils.toRunnable(promise));
@@ -220,15 +220,14 @@ public class LocalPlayback extends ExoPlayback<SimpleExoPlayer> {
     }
 
     @Override
-    public void setRepeatMode(int repeatMode) {
-        player.setRepeatMode(repeatMode);
-    }
-
-    @Override
     public int getRepeatMode() {
         return player.getRepeatMode();
     }
 
+    @Override
+    public void setRepeatMode(int repeatMode) {
+        player.setRepeatMode(repeatMode);
+    }
 
     @Override
     public void removeUpcomingTracks() {
@@ -334,12 +333,12 @@ public class LocalPlayback extends ExoPlayback<SimpleExoPlayer> {
     }
 
     @Override
-    public void cancelSaveToFile (String key, Promise callback){
+    public void cancelSaveToFile(String key, Promise callback) {
         try {
             DownloadTask downloadTask = downloadTasksTable.get(key);
             Utils.cancelSaveToFile(downloadTask);
             callback.resolve(key);
-        }catch(Throwable Error){
+        } catch (Throwable Error) {
             callback.reject(Error);
         }
     }
@@ -350,12 +349,12 @@ public class LocalPlayback extends ExoPlayback<SimpleExoPlayer> {
     }
 
     @Override
-    public void releaseCache (Promise callback){
+    public void releaseCache(Promise callback) {
         Utils.releaseCache(cache, callback);
     }
 
     @Override
-    public void evictCacheSpansForKey(String key, Promise callback ) {
+    public void evictCacheSpansForKey(String key, Promise callback) {
         Utils.evictSpans(cache, key, callback);
     }
 

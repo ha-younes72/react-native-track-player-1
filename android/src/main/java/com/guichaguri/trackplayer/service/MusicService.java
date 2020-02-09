@@ -116,8 +116,8 @@ public class MusicService extends HeadlessJsTaskService {
     @Override
     public void onDestroy() {
         super.onDestroy();
-
         destroy();
+        stopSelf();
     }
 
     @Override

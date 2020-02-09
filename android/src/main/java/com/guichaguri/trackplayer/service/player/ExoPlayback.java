@@ -23,6 +23,7 @@ import com.google.android.exoplayer2.metadata.id3.UrlLinkFrame;
 import com.google.android.exoplayer2.source.TrackGroup;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.guichaguri.trackplayer.service.MusicManager;
 import com.guichaguri.trackplayer.service.Utils;
 import com.guichaguri.trackplayer.service.models.Track;
@@ -83,22 +84,21 @@ public abstract class ExoPlayback<T extends Player> implements EventListener, Me
 
     public abstract void shuffleFromIndex(final int index, Promise promise);
 
-    public abstract void setRepeatMode(int repeatMode);
-
     public abstract long checkCachedStatus(String key, int length);
 
     public abstract void saveToFile(String key, Uri url, int length, String path, Boolean forceOverWrite, Promise callback);
 
-    public abstract  void cancelSaveToFile(String key, Promise callback);
+    public abstract void cancelSaveToFile(String key, Promise callback);
 
-    public abstract void releaseCache (Promise callback);
+    public abstract void releaseCache(Promise callback);
 
-    public abstract void evictCacheSpansForKey(String key, Promise callback );
+    public abstract void evictCacheSpansForKey(String key, Promise callback);
 
     public abstract void cacheRange(String key, int position, int length);
 
     public abstract int getRepeatMode();
 
+    public abstract void setRepeatMode(int repeatMode);
 
     public void updateTrack(int index, Track track) {
         int currentIndex = player.getCurrentWindowIndex();
@@ -372,16 +372,35 @@ public abstract class ExoPlayback<T extends Player> implements EventListener, Me
     @Override
     public void onPlayerError(ExoPlaybackException error) {
         String code;
-
+        String errorCode;
         if (error.type == ExoPlaybackException.TYPE_SOURCE) {
-            code = "playback-source";
+            Exception cause = error.getSourceException();
+            if (cause instanceof HttpDataSource.InvalidResponseCodeException) {
+                code = "playback-source";
+                errorCode = String.valueOf(((HttpDataSource.InvalidResponseCodeException) cause).responseCode);
+            } else if (cause instanceof HttpDataSource.InvalidContentTypeException) {
+                code = "playback-source";
+                errorCode = "InvalidContentType";
+            } else if (cause instanceof HttpDataSource.HttpDataSourceException) {
+                code = "playback-source";
+                errorCode = String.valueOf(((HttpDataSource.HttpDataSourceException) cause).type);
+            } else if (cause instanceof FileDataSource.FileDataSourceException) {
+                code = "playback-source";
+                errorCode = "IOException";
+            } else {
+                code = "playback-source";
+                errorCode = "-1";
+            }
+
         } else if (error.type == ExoPlaybackException.TYPE_RENDERER) {
             code = "playback-renderer";
+            errorCode = "-1";
         } else {
             code = "playback"; // Other unexpected errors related to the playback
+            errorCode = "-1";
         }
 
-        manager.onError(code, error.getCause().getMessage());
+        manager.onError(errorCode, code, error.getCause().getMessage());
     }
 
     @Override
