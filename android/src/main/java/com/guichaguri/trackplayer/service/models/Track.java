@@ -283,8 +283,7 @@ public class Track {
 }
 
 
-final class CustomPolicy
-        extends DefaultLoadErrorHandlingPolicy {
+final class CustomPolicy extends DefaultLoadErrorHandlingPolicy {
 
     @Override
     public long getRetryDelayMsFor(
