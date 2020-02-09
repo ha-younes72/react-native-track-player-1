@@ -26,6 +26,7 @@ import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.guichaguri.trackplayer.service.MusicManager;
 import com.guichaguri.trackplayer.service.Utils;
 import com.guichaguri.trackplayer.service.models.Track;
+import com.google.android.exoplayer2.upstream.FileDataSource;
 
 import java.util.ArrayList;
 import java.util.Collection;
