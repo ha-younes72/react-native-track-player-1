@@ -12,7 +12,12 @@ import com.guichaguri.trackplayer.service.player.ExoPlayback;
 public class MusicBinder extends Binder {
 
     private final MusicService service;
-    private final MusicManager manager;
+
+    public MusicManager getManager() {
+        return manager;
+    }
+
+    public final MusicManager manager;
 
     public MusicBinder(MusicService service, MusicManager manager) {
         this.service = service;

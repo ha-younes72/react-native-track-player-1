@@ -28,6 +28,7 @@ import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.google.android.exoplayer2.upstream.RawResourceDataSource;
 import com.google.android.exoplayer2.upstream.TransferListener;
 import com.google.android.exoplayer2.util.Util;
+import com.guichaguri.trackplayer.service.MusicManager;
 import com.guichaguri.trackplayer.service.Utils;
 import com.guichaguri.trackplayer.service.player.LocalPlayback;
 
@@ -77,29 +78,10 @@ public class Track {
     public RatingCompat rating;
 
     public Map<String, String> headers;
-    private TransferListener HttpFactoryListener = new TransferListener() {
-        @Override
-        public void onTransferInitializing(DataSource source, DataSpec dataSpec, boolean isNetwork) {
-            Log.d(Utils.LOG, "cache onTransferInitializing : source:" + source + " source:" + dataSpec + " source" + isNetwork + "//");
-        }
 
-        @Override
-        public void onTransferStart(DataSource source, DataSpec dataSpec, boolean isNetwork) {
-            Log.d(Utils.LOG, "cache onTransferStart : source:" + source + " source:" + dataSpec + " source" + isNetwork + "//");
-        }
+    TransferListener HttpFactoryListener = null;
 
-        @Override
-        public void onBytesTransferred(DataSource source, DataSpec dataSpec, boolean isNetwork, int bytesTransferred) {
-            //Log.d(Utils.LOG, "cache onBytesTransferred : source:"+source+" source:"+dataSpec+" source"+isNetwork+"bytesTransferred"+bytesTransferred+"//");
-        }
-
-        @Override
-        public void onTransferEnd(DataSource source, DataSpec dataSpec, boolean isNetwork) {
-            Log.d(Utils.LOG, "cache onTransferEnd : source:" + source + " source:" + dataSpec + " source" + isNetwork + "//");
-        }
-    };
-
-    public Track(Context context, Bundle bundle, int ratingType) {
+    public Track(Context context, Bundle bundle, int ratingType, MusicManager manager) {
 
 
         id = bundle.getString("id");
@@ -137,14 +119,43 @@ public class Track {
 
         queueId = System.currentTimeMillis();
         originalItem = bundle;
+
+
+        this.HttpFactoryListener = new TransferListener() {
+
+
+            @Override
+            public void onTransferInitializing(DataSource source, DataSpec dataSpec, boolean isNetwork) {
+                Log.d(Utils.LOG, "cache onTransferInitializing : source:" + source + " source:" + dataSpec + " source" + isNetwork + "//");
+                manager.setTransferingTrackId(id);
+            }
+
+            @Override
+            public void onTransferStart(DataSource source, DataSpec dataSpec, boolean isNetwork) {
+                Log.d(Utils.LOG, "cache onTransferStart : source:" + source + " source:" + dataSpec + " source" + isNetwork + "//");
+                manager.setTransferingTrackId(id);
+            }
+
+            @Override
+            public void onBytesTransferred(DataSource source, DataSpec dataSpec, boolean isNetwork, int bytesTransferred) {
+                //Log.d(Utils.LOG, "cache onBytesTransferred : source:"+source+" source:"+dataSpec+" source"+isNetwork+"bytesTransferred"+bytesTransferred+"//");
+            }
+
+            @Override
+            public void onTransferEnd(DataSource source, DataSpec dataSpec, boolean isNetwork) {
+                Log.d(Utils.LOG, "cache onTransferEnd : source:" + source + " source:" + dataSpec + " source" + isNetwork + "//");
+                manager.setTransferingTrackId(null);
+            }
+        };
+
     }
 
-    public static List<Track> createTracks(Context context, List objects, int ratingType) {
+    public static List<Track> createTracks(Context context, List objects, int ratingType, MusicManager manager) {
         List<Track> tracks = new ArrayList<>();
 
         for (Object o : objects) {
             if (o instanceof Bundle) {
-                tracks.add(new Track(context, (Bundle) o, ratingType));
+                tracks.add(new Track(context, (Bundle) o, ratingType, manager));
             } else {
                 return null;
             }
@@ -233,16 +244,17 @@ public class Track {
         } else if (Utils.isLocal(uri)) {
 
             // Creates a local source factory
-            ds = new DefaultDataSourceFactory(ctx, userAgent);
+            ds = new DefaultDataSourceFactory(ctx, userAgent, this.HttpFactoryListener);
 
         } else {
 
             // Creates a default http source factory, enabling cross protocol redirects
 
             DefaultHttpDataSourceFactory factory = new DefaultHttpDataSourceFactory(
-                    userAgent, HttpFactoryListener,
+                    userAgent, this.HttpFactoryListener,
                     DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
                     DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS,
+
                     true
             );
 

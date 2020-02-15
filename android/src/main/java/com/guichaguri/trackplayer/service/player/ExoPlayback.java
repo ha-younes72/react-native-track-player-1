@@ -373,6 +373,14 @@ public abstract class ExoPlayback<T extends Player> implements EventListener, Me
     public void onPlayerError(ExoPlaybackException error) {
         String code;
         String errorCode;
+        String id;
+
+        // here
+        int index = player.getCurrentWindowIndex();
+        id = index < 0 || index >= queue.size() ? null : queue.get(index).id;
+
+        Log.d(Utils.LOG, "Amiiin " + error.getStackTrace() );
+
         if (error.type == ExoPlaybackException.TYPE_SOURCE) {
             Exception cause = error.getSourceException();
             if (cause instanceof HttpDataSource.InvalidResponseCodeException) {
@@ -400,7 +408,7 @@ public abstract class ExoPlayback<T extends Player> implements EventListener, Me
             errorCode = "-1";
         }
 
-        manager.onError(errorCode, code, error.getCause().getMessage());
+        manager.onError(id, errorCode, code, error.getCause().getMessage());
     }
 
     @Override

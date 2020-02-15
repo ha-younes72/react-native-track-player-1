@@ -24,6 +24,7 @@ import com.facebook.react.bridge.ReadableMap;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Player;
 import com.guichaguri.trackplayer.service.MusicBinder;
+import com.guichaguri.trackplayer.service.MusicManager;
 import com.guichaguri.trackplayer.service.MusicService;
 import com.guichaguri.trackplayer.service.Utils;
 import com.guichaguri.trackplayer.service.models.Track;
@@ -223,7 +224,7 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
         waitForConnection(() -> {
             List<Track> trackList;
             try {
-                trackList = Track.createTracks(getReactApplicationContext(), bundleList, binder.getRatingType());
+                trackList = Track.createTracks(getReactApplicationContext(), bundleList, binder.getRatingType(), binder.getManager());
             } catch (Exception ex) {
                 callback.reject("invalid_track_object", ex);
                 return;
@@ -252,7 +253,7 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
             List<Track> trackList;
 
             try {
-                trackList = Track.createTracks(getReactApplicationContext(), bundleList, binder.getRatingType());
+                trackList = Track.createTracks(getReactApplicationContext(), bundleList, binder.getRatingType(), binder.getManager());
             } catch (Exception ex) {
                 callback.reject("invalid_track_object", ex);
                 return;
@@ -373,7 +374,7 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
             final ArrayList bundleList = Arguments.toList(tracks);
 
             List<Track> trackList;
-            trackList = Track.createTracks(getReactApplicationContext(), bundleList, binder.getRatingType());
+            trackList = Track.createTracks(getReactApplicationContext(), bundleList, binder.getRatingType(), binder.getManager());
             waitForConnection(() -> {
                 List<Track> queue = binder.getPlayback().getQueue();
 
@@ -397,7 +398,7 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
             final ArrayList bundleList = Arguments.toList(tracks);
 
             List<Track> trackList;
-            trackList = Track.createTracks(getReactApplicationContext(), bundleList, binder.getRatingType());
+            trackList = Track.createTracks(getReactApplicationContext(), bundleList, binder.getRatingType(),binder.getManager());
             waitForConnection(() -> {
                 List<Track> queue = binder.getPlayback().getQueue();
 

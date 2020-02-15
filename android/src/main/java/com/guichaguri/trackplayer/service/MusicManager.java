@@ -44,6 +44,12 @@ import static com.google.android.exoplayer2.DefaultLoadControl.DEFAULT_MIN_BUFFE
  */
 public class MusicManager implements OnAudioFocusChangeListener {
 
+    public void setTransferingTrackId(String transferringTrackId) {
+        this.TransferingTrackId = transferringTrackId;
+    }
+
+    public String TransferingTrackId = "";
+
     private final MusicService service;
 
     private final WakeLock wakeLock;
@@ -72,6 +78,8 @@ public class MusicManager implements OnAudioFocusChangeListener {
     public MusicManager(MusicService service) {
         this.service = service;
         this.metadata = new MetadataManager(service, this);
+
+        this.TransferingTrackId = TransferingTrackId;
 
         PowerManager powerManager = (PowerManager) service.getSystemService(Context.POWER_SERVICE);
         wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "track-player-wake-lock");
@@ -254,11 +262,13 @@ public class MusicManager implements OnAudioFocusChangeListener {
         service.emit(MusicEvents.PLAYBACK_METADATA, bundle);
     }
 
-    public void onError(String errorCode, String code, String error) {
+    public void onError(String id, String errorCode, String code, String error) {
         Log.d(Utils.LOG, "onError");
         Log.e(Utils.LOG, "Playback error: errorCode: " +errorCode + ":" + code + " - " + error);
 
         Bundle bundle = new Bundle();
+        bundle.putString("transferringId", TransferingTrackId);
+        bundle.putString("id", id);
         bundle.putString("code", code);
         bundle.putString("errorCode", errorCode);
         bundle.putString("message", error);
