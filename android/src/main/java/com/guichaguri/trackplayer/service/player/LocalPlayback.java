@@ -32,6 +32,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * @author Drazail
@@ -324,6 +325,16 @@ public class LocalPlayback extends ExoPlayback<SimpleExoPlayer> {
     @Override
     public long checkCachedStatus(String key, int length) {
         return Utils.checkCachedStatus(key, cache, length);
+    }
+
+    @Override
+    public Set<String> getCachedKeys() {
+        return Utils.getCachedKeys(cache);
+    }
+
+    @Override
+    public long getCacheSpace() {
+        return Utils.getCacheSpace(cache);
     }
 
     @Override

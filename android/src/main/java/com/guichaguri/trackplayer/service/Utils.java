@@ -25,6 +25,7 @@ import com.guichaguri.trackplayer.service.Tasks.DownloadTasks.DownloadTask;
 import com.guichaguri.trackplayer.service.Tasks.DownloadTasks.TaskParams;
 
 import java.util.NavigableSet;
+import java.util.Set;
 
 /**
  * @author Guichaguri
@@ -200,6 +201,14 @@ public class Utils {
 
         Log.d(Utils.LOG, "cache cachePair : Cache: total cached bytes: " + cachedBytes + " for Key: " + key + "//");
         return cachedBytes;
+    }
+
+    public static Set<String> getCachedKeys(Cache cache){
+        return cache.getKeys();
+    }
+
+    public static long getCacheSpace (Cache cache){
+        return cache.getCacheSpace();
     }
 
     public static DownloadTask saveToFile(Context ctx, MusicService service, Cache cache, String key, Uri uri, int length, String path, boolean ForceOverWrite, Promise callback) {

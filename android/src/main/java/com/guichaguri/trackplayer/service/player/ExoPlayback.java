@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Guichaguri
@@ -85,6 +86,10 @@ public abstract class ExoPlayback<T extends Player> implements EventListener, Me
     public abstract void shuffleFromIndex(final int index, Promise promise);
 
     public abstract long checkCachedStatus(String key, int length);
+
+    public abstract Set<String> getCachedKeys();
+
+    public abstract long getCacheSpace();
 
     public abstract void saveToFile(String key, Uri url, int length, String path, Boolean forceOverWrite, Promise callback);
 

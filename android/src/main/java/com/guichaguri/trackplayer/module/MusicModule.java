@@ -24,7 +24,6 @@ import com.facebook.react.bridge.ReadableMap;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Player;
 import com.guichaguri.trackplayer.service.MusicBinder;
-import com.guichaguri.trackplayer.service.MusicManager;
 import com.guichaguri.trackplayer.service.MusicService;
 import com.guichaguri.trackplayer.service.Utils;
 import com.guichaguri.trackplayer.service.models.Track;
@@ -32,9 +31,11 @@ import com.guichaguri.trackplayer.service.player.ExoPlayback;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -188,8 +189,9 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
 
         try {
             if (binder != null) {
-                binder.post(()->{binder.destroy();
-                binder = null;
+                binder.post(() -> {
+                    binder.destroy();
+                    binder = null;
                 });
 
             }
@@ -398,7 +400,7 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
             final ArrayList bundleList = Arguments.toList(tracks);
 
             List<Track> trackList;
-            trackList = Track.createTracks(getReactApplicationContext(), bundleList, binder.getRatingType(),binder.getManager());
+            trackList = Track.createTracks(getReactApplicationContext(), bundleList, binder.getRatingType(), binder.getManager());
             waitForConnection(() -> {
                 List<Track> queue = binder.getPlayback().getQueue();
 
@@ -669,13 +671,27 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
 
     @ReactMethod
     public void getState(final Promise callback) {
-        Log.d("TrackPlayer!!!!!!!!","getState is being called");
+        Log.d("TrackPlayer!!!!!!!!", "getState is being called");
         waitForConnection(() -> callback.resolve(binder.getPlayback().getState()));
     }
 
     @ReactMethod
     public void getCachedStatus(String key, int length, final Promise callback) {
         waitForConnection(() -> callback.resolve(binder.getPlayback().checkCachedStatus(key, length)));
+    }
+
+    @ReactMethod
+    public void getCahcedKeys(final Promise callback) {
+        waitForConnection(() -> {
+            Set s = binder.getPlayback().getCachedKeys();
+            String[] arr = Arrays.copyOf(s.toArray(), s.size(), String[].class);
+            callback.resolve(arr);
+        });
+    }
+
+    @ReactMethod
+    public void getCacheSpace(final Promise callback) {
+        waitForConnection(() -> callback.resolve(binder.getPlayback().getCacheSpace()));
     }
 
     @ReactMethod

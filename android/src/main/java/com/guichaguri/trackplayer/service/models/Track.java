@@ -321,6 +321,6 @@ final class CustomPolicy extends DefaultLoadErrorHandlingPolicy {
 
     @Override
     public int getMinimumLoadableRetryCount(int dataType) {
-        return Integer.MAX_VALUE;
+        return 600000;
     }
 }
