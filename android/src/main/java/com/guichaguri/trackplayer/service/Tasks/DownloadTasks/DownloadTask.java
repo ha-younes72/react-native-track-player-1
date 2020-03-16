@@ -18,6 +18,7 @@ import com.guichaguri.trackplayer.service.Utils;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.Objects;
 
 
 public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
@@ -98,14 +99,14 @@ public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
                     bundle.putString("status", "rejected");
                     bundle.putString("cause", String.valueOf(e.getCause()));
                     bundle.putString("message", e.getMessage());
-                    service.emit(MusicEvents.DOWNLOAD_ERROR, bundle);
+                    if(service != null) service.emit(MusicEvents.DOWNLOAD_ERROR, bundle);
                 } catch (Exception error) {
                     Bundle bundle = new Bundle();
                     bundle.putString("key", key);
                     bundle.putString("status", "rejected");
                     bundle.putString("cause", String.valueOf(error.getCause()));
                     bundle.putString("error", error.getMessage());
-                    service.emit(MusicEvents.DOWNLOAD_ERROR, bundle);
+                    if(service != null) service.emit(MusicEvents.DOWNLOAD_ERROR, bundle);
                     e.printStackTrace();
                 }
                 e.printStackTrace();
@@ -128,7 +129,7 @@ public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
             bundle.putInt("progress", prog[0]);
             bundle.putInt("length", length);
             bundle.putString("url", uri.toString());
-            service.emit(MusicEvents.DOWNLOAD_PROGRESS, bundle);
+            if(service != null) service.emit(MusicEvents.DOWNLOAD_PROGRESS, bundle);
         }
     }
 
@@ -142,13 +143,13 @@ public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
                 Bundle bundle = new Bundle();
                 bundle.putString("key", key);
                 bundle.putString("status", "resolved");
-                service.emit(MusicEvents.DOWNLOAD_CANCELLED, bundle);
+                if(service != null) service.emit(MusicEvents.DOWNLOAD_CANCELLED, bundle);
             } catch (Exception e) {
                 Bundle bundle = new Bundle();
                 bundle.putString("key", key);
                 bundle.putString("status", "rejected");
                 bundle.putString("error", e.toString());
-                service.emit(MusicEvents.DOWNLOAD_CANCELLED, bundle);
+                if(service != null) service.emit(MusicEvents.DOWNLOAD_CANCELLED, bundle);
                 e.printStackTrace();
             }
         } else if (path != "0") {
@@ -157,7 +158,7 @@ public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
             bundle.putInt("length", length);
             bundle.putString("url", uri.toString());
             bundle.putString("path", path);
-            service.emit(MusicEvents.DOWNLOAD_COMPLETED, bundle);
+            if(service != null) service.emit(MusicEvents.DOWNLOAD_COMPLETED, bundle);
             callback.resolve(path);
         }
 
@@ -172,13 +173,13 @@ public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
             Bundle bundle = new Bundle();
             bundle.putString("key", key);
             bundle.putString("status", "resolved");
-            service.emit(MusicEvents.DOWNLOAD_CANCELLED, bundle);
+            if(service != null) service.emit(MusicEvents.DOWNLOAD_CANCELLED, bundle);
         } catch (Exception e) {
             Bundle bundle = new Bundle();
             bundle.putString("key", key);
             bundle.putString("status", "rejected");
             bundle.putString("error", e.toString());
-            service.emit(MusicEvents.DOWNLOAD_CANCELLED, bundle);
+            if(service != null) service.emit(MusicEvents.DOWNLOAD_CANCELLED, bundle);
             e.printStackTrace();
         }
 
