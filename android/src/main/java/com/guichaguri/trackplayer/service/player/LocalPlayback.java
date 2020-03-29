@@ -44,7 +44,7 @@ public class LocalPlayback extends ExoPlayback<SimpleExoPlayer> {
     private SimpleCache cache;
     private ConcatenatingMediaSource source;
     private boolean prepared = false;
-    private Map<String, DownloadTask> downloadTasksTable = new Hashtable<String, DownloadTask>();
+    private Map<String, DownloadTask> downloadTasksTable = new Hashtable<>();
 
     public LocalPlayback(MusicService service, Context context, MusicManager manager, SimpleExoPlayer player, long maxCacheSize) {
         super(context, manager, player);
@@ -339,16 +339,33 @@ public class LocalPlayback extends ExoPlayback<SimpleExoPlayer> {
 
     @Override
     public void saveToFile(String key, Uri url, int length, String path, Boolean forceOverWrite, Promise callback) {
-        DownloadTask downloadTask = Utils.saveToFile(context, service, cache, key, url, length, path, forceOverWrite, callback);
-        downloadTasksTable.put(key, downloadTask);
+        try {
+            DownloadTask downloadTask = Utils.saveToFile(context, service, cache, key, url, length, path, forceOverWrite, callback);
+            if(downloadTasksTable != null){
+                downloadTasksTable.put(key, downloadTask);
+            }else {
+                downloadTasksTable = new Hashtable<>();
+                downloadTasksTable.put(key, downloadTask);
+            }
+
+            callback.resolve(null);
+        } catch (Throwable Error) {
+            callback.reject(Error);
+        }
     }
 
     @Override
     public void cancelSaveToFile(String key, Promise callback) {
         try {
             DownloadTask downloadTask = downloadTasksTable.get(key);
-            Utils.cancelSaveToFile(downloadTask);
-            callback.resolve(key);
+
+            if (downloadTask != null) {
+                Utils.cancelSaveToFile(downloadTask);
+                callback.resolve(key);
+            }else{
+                callback.reject("DownloadTaskNotFound","no such downloadTask was registered");
+            }
+
         } catch (Throwable Error) {
             callback.reject(Error);
         }
