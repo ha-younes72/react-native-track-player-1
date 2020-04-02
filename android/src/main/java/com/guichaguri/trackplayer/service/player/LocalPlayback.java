@@ -347,8 +347,6 @@ public class LocalPlayback extends ExoPlayback<SimpleExoPlayer> {
                 downloadTasksTable = new Hashtable<>();
                 downloadTasksTable.put(key, downloadTask);
             }
-
-            callback.resolve(null);
         } catch (Throwable Error) {
             callback.reject(Error);
         }
