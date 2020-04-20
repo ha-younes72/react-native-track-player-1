@@ -75,6 +75,7 @@ public final class Evictor implements CacheEvictor, Comparator<CacheSpan> {
         Log.d(Utils.LOG, "cache onSpanRemoved : Cache:"+cache+"/ CacheSpan: "+span+"//");
         leastRecentlyUsed.remove(span);
         currentSize -= span.length;
+        checkCachedStatus(span, cache);
     }
 
     @Override
@@ -119,7 +120,7 @@ public final class Evictor implements CacheEvictor, Comparator<CacheSpan> {
 
         //long requestedBytes = cachePair.first;
         //long cachedBytes = cachePair.second;
-        Long cachedBytes = Long.valueOf(0);
+        long cachedBytes = 0L;
         NavigableSet<CacheSpan> cahcedSpans = cache.getCachedSpans(span.key);
         for (CacheSpan cachedSpan : cahcedSpans){
             cachedBytes += cachedSpan.length;

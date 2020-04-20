@@ -21,6 +21,8 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.bridge.WritableNativeArray;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Player;
 import com.guichaguri.trackplayer.service.MusicBinder;
@@ -684,14 +686,18 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
     public void getCahcedKeys(final Promise callback) {
         waitForConnection(() -> {
             Set s = binder.getPlayback().getCachedKeys();
-            String[] arr = Arrays.copyOf(s.toArray(), s.size(), String[].class);
+            // String[] arr = Arrays.copyOf(s.toArray(), s.size(), String[].class);
+            WritableArray arr = new WritableNativeArray();
+            for(Object str : s){
+                arr.pushString(str.toString());
+            }
             callback.resolve(arr);
         });
     }
 
     @ReactMethod
     public void getCacheSpace(final Promise callback) {
-        waitForConnection(() -> callback.resolve(binder.getPlayback().getCacheSpace()));
+        waitForConnection(() -> callback.resolve((int)binder.getPlayback().getCacheSpace()));
     }
 
     @ReactMethod
