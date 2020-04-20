@@ -683,7 +683,7 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
     }
 
     @ReactMethod
-    public void getCahcedKeys(final Promise callback) {
+    public void getCachedKeys(final Promise callback) {
         waitForConnection(() -> {
             Set s = binder.getPlayback().getCachedKeys();
             // String[] arr = Arrays.copyOf(s.toArray(), s.size(), String[].class);
