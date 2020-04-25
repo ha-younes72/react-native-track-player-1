@@ -44,25 +44,16 @@ import static com.google.android.exoplayer2.DefaultLoadControl.DEFAULT_MIN_BUFFE
  */
 public class MusicManager implements OnAudioFocusChangeListener {
 
-    public void setTransferingTrackId(String transferringTrackId) {
-        this.TransferingTrackId = transferringTrackId;
-    }
-
-    public String TransferingTrackId = "";
-
     private final MusicService service;
-
     private final WakeLock wakeLock;
     private final WifiLock wifiLock;
-
+    public String TransferingTrackId = "";
     private MetadataManager metadata;
     private ExoPlayback playback;
-
     @RequiresApi(26)
     private AudioFocusRequest focus = null;
     private boolean hasAudioFocus = false;
     private boolean wasDucking = false;
-
     private BroadcastReceiver noisyReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -70,10 +61,8 @@ public class MusicManager implements OnAudioFocusChangeListener {
         }
     };
     private boolean receivingNoisyEvents = false;
-
     private boolean stopWithApp = false;
     private boolean alwaysPauseOnInterruption = false;
-
     @SuppressLint("InvalidWakeLockTag")
     public MusicManager(MusicService service) {
         this.service = service;
@@ -89,6 +78,10 @@ public class MusicManager implements OnAudioFocusChangeListener {
         WifiManager wifiManager = (WifiManager) service.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL, "track-player-wifi-lock");
         wifiLock.setReferenceCounted(false);
+    }
+
+    public void setTransferingTrackId(String transferringTrackId) {
+        this.TransferingTrackId = transferringTrackId;
     }
 
     public ExoPlayback getPlayback() {
@@ -214,6 +207,9 @@ public class MusicManager implements OnAudioFocusChangeListener {
 
         Bundle bundle = new Bundle();
         bundle.putInt("state", state);
+        bundle.putString("transferringId", TransferingTrackId);
+        bundle.putString("track", playback.getCurrentTrack() != null ? playback.getCurrentTrack().id : "NA");
+        bundle.putInt("position", playback.getCurrentTrack() != null ? (int) playback.getPosition() : -1);
         service.emit(MusicEvents.PLAYBACK_STATE, bundle);
         metadata.updatePlayback(playback);
     }
@@ -264,7 +260,7 @@ public class MusicManager implements OnAudioFocusChangeListener {
 
     public void onError(String id, String errorCode, String code, String error) {
         Log.d(Utils.LOG, "onError");
-        Log.e(Utils.LOG, "Playback error: errorCode: " +errorCode + ":" + code + " - " + error);
+        Log.e(Utils.LOG, "Playback error: errorCode: " + errorCode + ":" + code + " - " + error);
 
         Bundle bundle = new Bundle();
         bundle.putString("transferringId", TransferingTrackId);
