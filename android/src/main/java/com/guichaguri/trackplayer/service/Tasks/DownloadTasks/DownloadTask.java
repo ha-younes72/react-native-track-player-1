@@ -93,7 +93,7 @@ public class DownloadTask extends AsyncTask<TaskParams, Integer, String> {
                 Log.d(Utils.LOG, "Download: BackGroundTask Interrupted as unexpectedly//");
                 try {
                     File partiallyDownloadedFile = new File(path);
-                    if (partiallyDownloadedFile.exists()) partiallyDownloadedFile.delete();
+                    if (!ignoreCancel && partiallyDownloadedFile.exists()) partiallyDownloadedFile.delete();
                     Bundle bundle = new Bundle();
                     bundle.putString("key", key);
                     bundle.putString("status", "rejected");
